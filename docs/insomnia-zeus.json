@@ -1,0 +1,205 @@
+{
+  "_type": "export",
+  "__export_format": 4,
+  "__export_date": "2026-10-03T00:00:00.000Z",
+  "__export_source": "zeus",
+  "resources": [
+    {
+      "_id": "__WORKSPACE_ID__",
+      "_type": "workspace",
+      "name": "Zeus API",
+      "description": "REST API для GameHub на Scala 3, ZIO и Redis",
+      "parentId": null
+    },
+    {
+      "_id": "__BASE_ENVIRONMENT_ID__",
+      "_type": "environment",
+      "name": "Base Environment",
+      "parentId": "__WORKSPACE_ID__",
+      "data": {
+        "base_url": "http://localhost:8080",
+        "player_id": "1001",
+        "other_player_id": "1002",
+        "achievement_name": "first_win",
+        "limit": 10
+      }
+    },
+    {
+      "_id": "__folder_1__",
+      "_type": "request_group",
+      "name": "Игроки",
+      "parentId": "__WORKSPACE_ID__",
+      "description": "Профили, уровень, входы и пакетная запись"
+    },
+    {
+      "_id": "__folder_2__",
+      "_type": "request_group",
+      "name": "Лидерборд",
+      "parentId": "__WORKSPACE_ID__",
+      "description": "Очки и место игрока"
+    },
+    {
+      "_id": "__folder_3__",
+      "_type": "request_group",
+      "name": "Достижения",
+      "parentId": "__WORKSPACE_ID__",
+      "description": "Множества достижений игроков"
+    },
+    {
+      "_id": "__request_1__",
+      "_type": "request",
+      "parentId": "__folder_1__",
+      "name": "Создать или обновить профиль",
+      "method": "POST",
+      "url": "{{ base_url }}/api/players/{{ player_id }}",
+      "description": "При повторном обновлении отправляет уведомление в Redis Stream.",
+      "headers": [{ "name": "Content-Type", "value": "application/json" }],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"name\": \"Player 1001\",\n  \"level\": 3,\n  \"region\": \"eu\"\n}"
+      },
+      "parameters": []
+    },
+    {
+      "_id": "__request_2__",
+      "_type": "request",
+      "parentId": "__folder_1__",
+      "name": "Получить профиль",
+      "method": "GET",
+      "url": "{{ base_url }}/api/players/{{ player_id }}",
+      "description": "Повторный запрос использует кэш Redis с TTL 60 секунд.",
+      "headers": [],
+      "body": {},
+      "parameters": []
+    },
+    {
+      "_id": "__request_3__",
+      "_type": "request",
+      "parentId": "__folder_1__",
+      "name": "Изменить уровень",
+      "method": "PATCH",
+      "url": "{{ base_url }}/api/players/{{ player_id }}/level",
+      "description": "Меняет уровень и записывает уведомление в Redis Stream.",
+      "headers": [{ "name": "Content-Type", "value": "application/json" }],
+      "body": { "mimeType": "application/json", "text": "{\n  \"delta\": 2\n}" },
+      "parameters": []
+    },
+    {
+      "_id": "__request_4__",
+      "_type": "request",
+      "parentId": "__folder_1__",
+      "name": "Зафиксировать вход",
+      "method": "POST",
+      "url": "{{ base_url }}/api/players/{{ player_id }}/login",
+      "description": "Увеличивает счётчик входов с TTL 24 часа.",
+      "headers": [],
+      "body": {},
+      "parameters": []
+    },
+    {
+      "_id": "__request_5__",
+      "_type": "request",
+      "parentId": "__folder_1__",
+      "name": "Пакетная запись профилей",
+      "method": "POST",
+      "url": "{{ base_url }}/api/players/batch",
+      "description": "Записывает от 1 до 100 профилей через Lettuce pipeline.",
+      "headers": [{ "name": "Content-Type", "value": "application/json" }],
+      "body": {
+        "mimeType": "application/json",
+        "text": "[\n  { \"id\": \"2001\", \"name\": \"Alice\", \"level\": 1, \"region\": \"eu\" },\n  { \"id\": \"2002\", \"name\": \"Bob\", \"level\": 2, \"region\": \"us\" }\n]"
+      },
+      "parameters": []
+    },
+    {
+      "_id": "__request_6__",
+      "_type": "request",
+      "parentId": "__folder_2__",
+      "name": "Добавить очки",
+      "method": "POST",
+      "url": "{{ base_url }}/api/leaderboard/score",
+      "description": "Увеличивает очки игрока в Sorted Set tournament:main.",
+      "headers": [{ "name": "Content-Type", "value": "application/json" }],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"playerId\": \"{{ player_id }}\",\n  \"score\": 10\n}"
+      },
+      "parameters": []
+    },
+    {
+      "_id": "__request_7__",
+      "_type": "request",
+      "parentId": "__folder_2__",
+      "name": "Топ игроков",
+      "method": "GET",
+      "url": "{{ base_url }}/api/leaderboard/top?limit={{ limit }}",
+      "description": "limit — от 1 до 100.",
+      "headers": [],
+      "body": {},
+      "parameters": []
+    },
+    {
+      "_id": "__request_8__",
+      "_type": "request",
+      "parentId": "__folder_2__",
+      "name": "Место игрока",
+      "method": "GET",
+      "url": "{{ base_url }}/api/leaderboard/rank/{{ player_id }}",
+      "description": "Место считается с нуля, как Redis ZRANK.",
+      "headers": [],
+      "body": {},
+      "parameters": []
+    },
+    {
+      "_id": "__request_9__",
+      "_type": "request",
+      "parentId": "__folder_3__",
+      "name": "Добавить достижение",
+      "method": "POST",
+      "url": "{{ base_url }}/api/players/{{ player_id }}/achievements",
+      "description": "Добавляет достижение игроку.",
+      "headers": [{ "name": "Content-Type", "value": "application/json" }],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"name\": \"{{ achievement_name }}\"\n}"
+      },
+      "parameters": []
+    },
+    {
+      "_id": "__request_10__",
+      "_type": "request",
+      "parentId": "__folder_3__",
+      "name": "Проверить достижение",
+      "method": "GET",
+      "url": "{{ base_url }}/api/players/{{ player_id }}/achievements/{{ achievement_name }}",
+      "description": "Проверяет наличие достижения у игрока.",
+      "headers": [],
+      "body": {},
+      "parameters": []
+    },
+    {
+      "_id": "__request_11__",
+      "_type": "request",
+      "parentId": "__folder_3__",
+      "name": "Общие достижения",
+      "method": "GET",
+      "url": "{{ base_url }}/api/players/{{ player_id }}/achievements/common/{{ other_player_id }}",
+      "description": "Пересечение множеств достижений двух игроков.",
+      "headers": [],
+      "body": {},
+      "parameters": []
+    },
+    {
+      "_id": "__request_12__",
+      "_type": "request",
+      "parentId": "__WORKSPACE_ID__",
+      "name": "Поток уведомлений (SSE)",
+      "method": "GET",
+      "url": "{{ base_url }}/api/notifications/stream",
+      "description": "Оставьте запрос открытым и измените уровень игрока. Новые уведомления приходят всем подключённым клиентам; история не воспроизводится.",
+      "headers": [{ "name": "Accept", "value": "text/event-stream" }],
+      "body": {},
+      "parameters": []
+    }
+  ]
+}
